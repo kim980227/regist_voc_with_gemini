@@ -83,22 +83,17 @@ def main():
     df_voc = filter_valid_voc_rows(df_voc, invalid_indexes)
 
     # 🔍 VOC유형 추론 (Gemini API 사용, 필요시 주석 해제)
-    # df_voc = infer_voc_type_with_gemini(df_voc, voc_type_map)
+    df_voc = infer_voc_type_with_gemini(df_voc, voc_type_map)
 
     # ❗ VOC유형만 검증 (추론 이후 VOC 유형 코드가 유효한지 확인)
     invalid_voc_type_indexes = validate_voc_type_only(df_voc, voc_type_map)
-
     df_voc = filter_valid_voc_rows(df_voc, invalid_voc_type_indexes)
-    print(f"\n✅ 입력 준비 완료된 VOC 목록: {len(df_voc)}건")
-    # print(df_voc)  # 데이터 확인용 출력
 
     # 📊 API 전송을 위한 폼 데이터 추출
-    # extract_voc_form_data 함수 호출
     voc_form_data_list = set_qry_params(df_voc, voc_type_map, voc_recv_map, voc_service_map, insa_info_map)
-    print(f"\n📊 VOC 폼 데이터 준비 완료: {len(voc_form_data_list)}건")
+    print(f"\n✅ 입력 준비 완료된 VOC 목록: {len(voc_form_data_list)}건")
 
     # 웹 로그인 및 VOC 페이지 요청 (AuthService 인스턴스 생성 및 사용)
-    # config.session은 requests.Session 객체이므로 직접 전달
     successful_session = auth_service.login_and_fetch_voc_page() 
     input("계속하려면 Enter를 누르세요...")
     send_voc_data_to_api(voc_form_data_list, successful_session)

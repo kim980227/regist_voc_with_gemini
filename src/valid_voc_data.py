@@ -42,7 +42,6 @@ def validate_voc_data(df, required_fields, recv_type_map, service_map, voc_type_
 
     # insa_info_map에서 유효한 hname(한글 이름)들을 set으로 미리 준비
     valid_insa_hnames = {info['hname'] for info in insa_info_map if 'hname' in info}
-    print(f"로드된 유효한 인사 이름 (일부): {list(valid_insa_hnames)[:5]}{'...' if len(valid_insa_hnames) > 5 else ''}")
 
     for idx, row in df.iterrows():
         excel_row = idx + 2  # Excel 기준 행 번호

@@ -1,5 +1,6 @@
 # main.py
 import pandas as pd
+import os
 
 from src.valid_voc_data import (
     load_voc_code_mappings,
@@ -38,7 +39,7 @@ def main():
     voc_type_file_path = VOC_TYPE_FILE_PATH
     voc_recv_type_file_path = VOC_RECV_TYPE_FILE_PATH
     voc_service_file_path = VOC_SERVICE_FILE_PATH
-    voc_data_file_path = VOC_DATA_FILE_PATH
+    voc_data_dir = VOC_DATA_FILE_PATH
 
     # ✅ 필수 필드 정의
     required_fields = [
@@ -57,15 +58,23 @@ def main():
         print(f"❌ 코드 매핑 로딩 실패, 프로그램을 종료합니다.: {e}")
         return
 
-    # 📄 VOC 데이터 로딩
+    # 📄 VOC CSV 파일 탐색 및 로딩
     try:
+        csv_files = [f for f in os.listdir(voc_data_dir) if f.lower().endswith('.csv')]
+
+        if len(csv_files) == 0:
+            print(f"❌ '{voc_data_dir}' 디렉토리에 CSV 파일이 없습니다. 프로그램을 종료합니다.")
+            exit()
+        elif len(csv_files) > 1:
+            print(f"❌ '{voc_data_dir}' 디렉토리에 CSV 파일이 2개 이상 존재합니다. 하나만 존재해야 합니다. 프로그램을 종료합니다.")
+            exit()
+
+        voc_data_file_path = os.path.join(voc_data_dir, csv_files[0])
         df_voc = pd.read_csv(voc_data_file_path)
-    except FileNotFoundError:
-        print(f"❌ VOC 데이터 파일 '{voc_data_file_path}'을(를) 찾을 수 없습니다. 프로그램을 종료합니다.")
-        return
+
     except Exception as e:
         print(f"❌ VOC 데이터 파일 로딩 실패, 프로그램을 종료합니다.: {e}")
-        return
+        exit()
 
     # 🔍 데이터 검증
     invalid_indexes = validate_voc_data(df_voc, required_fields, voc_recv_map, voc_service_map, voc_type_map, insa_info_map)
@@ -83,7 +92,7 @@ def main():
     df_voc = filter_valid_voc_rows(df_voc, invalid_indexes)
 
     # 🔍 VOC유형 추론 (Gemini API 사용, 필요시 주석 해제)
-    df_voc = infer_voc_type_with_gemini(df_voc, voc_type_map)
+    # df_voc = infer_voc_type_with_gemini(df_voc, voc_type_map)
 
     # ❗ VOC유형만 검증 (추론 이후 VOC 유형 코드가 유효한지 확인)
     invalid_voc_type_indexes = validate_voc_type_only(df_voc, voc_type_map)

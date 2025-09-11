@@ -3,3 +3,5 @@ python-dotenv
 pandas
 psycopg2
 google-generativeai
+mcp>=1.0.0
+asyncio-compat

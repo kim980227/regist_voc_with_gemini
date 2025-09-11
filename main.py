@@ -1,6 +1,8 @@
 # main.py
 import pandas as pd
 import os
+import sys
+import io
 
 from src.valid_voc_data import (
     load_voc_code_mappings,
@@ -58,23 +60,33 @@ def main():
         print(f"❌ 코드 매핑 로딩 실패, 프로그램을 종료합니다.: {e}")
         return
 
-    # 📄 VOC CSV 파일 탐색 및 로딩
-    try:
-        csv_files = [f for f in os.listdir(voc_data_dir) if f.lower().endswith('.csv')]
+    # 📄 VOC CSV 파일 탐색 및 로딩 (수정: 명령줄 인수 또는 표준 입력 지원)
+    if len(sys.argv) > 1:
+        # 명령줄 인수로 CSV 파일 경로 받기
+        voc_data_file_path = sys.argv[1]
+        try:
+            df_voc = pd.read_csv(voc_data_file_path)
+        except Exception as e:
+            print(f"❌ CSV 파일 로딩 실패: {e}")
+            return
+    else:
+        # 기존 레거시 방식 (로컬 디렉토리에서 csv파일 불러오기)
+        try:
+            csv_files = [f for f in os.listdir(voc_data_dir) if f.lower().endswith('.csv')]
 
-        if len(csv_files) == 0:
-            print(f"❌ '{voc_data_dir}' 디렉토리에 CSV 파일이 없습니다. 프로그램을 종료합니다.")
+            if len(csv_files) == 0:
+                print(f"❌ '{voc_data_dir}' 디렉토리에 CSV 파일이 없습니다. 프로그램을 종료합니다.")
+                exit()
+            elif len(csv_files) > 1:
+                print(f"❌ '{voc_data_dir}' 디렉토리에 CSV 파일이 2개 이상 존재합니다. 하나만 존재해야 합니다. 프로그램을 종료합니다.")
+                exit()
+
+            voc_data_file_path = os.path.join(voc_data_dir, csv_files[0])
+            df_voc = pd.read_csv(voc_data_file_path)
+
+        except Exception as e:
+            print(f"❌ VOC 데이터 파일 로딩 실패, 프로그램을 종료합니다.: {e}")
             exit()
-        elif len(csv_files) > 1:
-            print(f"❌ '{voc_data_dir}' 디렉토리에 CSV 파일이 2개 이상 존재합니다. 하나만 존재해야 합니다. 프로그램을 종료합니다.")
-            exit()
-
-        voc_data_file_path = os.path.join(voc_data_dir, csv_files[0])
-        df_voc = pd.read_csv(voc_data_file_path)
-
-    except Exception as e:
-        print(f"❌ VOC 데이터 파일 로딩 실패, 프로그램을 종료합니다.: {e}")
-        exit()
 
     # 🔍 데이터 검증
     invalid_indexes = validate_voc_data(df_voc, required_fields, voc_recv_map, voc_service_map, voc_type_map, insa_info_map)
@@ -104,7 +116,7 @@ def main():
 
     # 웹 로그인 및 VOC 페이지 요청 (AuthService 인스턴스 생성 및 사용)
     successful_session = auth_service.login_and_fetch_voc_page() 
-    input("계속하려면 Enter를 누르세요...")
+    # input("계속하려면 Enter를 누르세요...")
     send_voc_data_to_api(voc_form_data_list, successful_session)
 
     session_manager.close_all_sessions()

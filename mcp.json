@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "voc_agent_server": {
+      "command": "python",
+      "args": ["src/mcp_server.py"],
+      "cwd": "c:\\Users\\sm\\Desktop\\Desk\\python-ws\\voc_agent"
+    }
+  }
+}

@@ -11,9 +11,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent  # 프로젝트 루트 추정
 MAIN_SCRIPT = BASE_DIR / "main.py"
 DATA_DIR = BASE_DIR / "data"
 
-app = Server("voc_agent_server")
+server = Server("voc_agent_server")
 
-@app.list_tools()
+@server.list_tools()
 async def list_tools() -> List[Tool]:
     return [
         Tool(
@@ -111,7 +111,7 @@ async def _exec_main(csv_path: Path) -> TextContent:
     except Exception as e:
         return TextContent(type="text", text=f"❌ 실행 실패: {e}")
 
-@app.call_tool()
+@server.call_tool()
 async def call_tool(name: str, arguments: dict) -> List[TextContent]:
     if name == "list_csv_files":
         if not DATA_DIR.exists():
@@ -137,7 +137,7 @@ async def call_tool(name: str, arguments: dict) -> List[TextContent]:
 async def main():
     from mcp.server.stdio import stdio_server
     async with stdio_server() as (read_stream, write_stream):
-        await app.run(read_stream, write_stream, app.create_initialization_options())
+        await server.run(read_stream, write_stream, server.create_initialization_options())
 
 if __name__ == "__main__":
     asyncio.run(main())

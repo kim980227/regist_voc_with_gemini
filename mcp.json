@@ -3,7 +3,7 @@
     "voc_agent_server": {
       "command": "python",
       "args": ["src/mcp_server.py"],
-      "cwd": "c:\\Users\\sm\\Desktop\\Desk\\python-ws\\voc_agent"
+      "cwd": "/home/monpmct/open-webui/data/app/regist_voc_with_gemini"
     }
   }
 }
